@@ -139,7 +139,10 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Firebase CRUD App')),
+      appBar: AppBar(
+        title: const Text('Login - Dalandangan'),
+        backgroundColor: Colors.teal,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
