@@ -35,7 +35,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final user = await _authService.registerWithEmail(
-        _emailController.text.trim(),
+        _emailController.text.trim().toLowerCase(),
         _passwordController.text,
       );
       if (user != null && mounted) {

@@ -27,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _signIn() async {
-    final email = _emailController.text.trim();
+    final email = _emailController.text.trim().toLowerCase();
     final password = _passwordController.text;
     if (email.isEmpty || password.isEmpty) {
       _showMessage('Enter your email and password.');
@@ -41,7 +41,9 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final user = await _authService.signInWithEmail(email, password);
-      if (user != null && !user.emailVerified) {
+      await user?.reload();
+      final refreshedUser = FirebaseAuth.instance.currentUser;
+      if (refreshedUser != null && !refreshedUser.emailVerified) {
         _showMessage('Verify your email before signing in.');
       }
     } on FirebaseAuthException catch (error) {

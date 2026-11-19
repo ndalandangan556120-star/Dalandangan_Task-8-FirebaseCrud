@@ -25,7 +25,7 @@ class AuthService {
 
   Future<User?> registerWithEmail(String email, String password) async {
     final credential = await _auth.createUserWithEmailAndPassword(
-      email: email,
+      email: email.trim().toLowerCase(),
       password: password,
     );
     return credential.user;
@@ -33,7 +33,7 @@ class AuthService {
 
   Future<User?> signInWithEmail(String email, String password) async {
     final credential = await _auth.signInWithEmailAndPassword(
-      email: email,
+      email: email.trim().toLowerCase(),
       password: password,
     );
     return credential.user;
