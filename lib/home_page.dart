@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'auth_service.dart';
 import 'crud_service.dart';
 
 // TODO: put YOUR last name here – it must be visible in the screenshot.
@@ -14,6 +15,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final CrudService service = CrudService();
+  final AuthService authService = AuthService();
   final TextEditingController nameCtrl = TextEditingController();
   final TextEditingController qtyCtrl = TextEditingController();
   bool showFavoritesOnly = false; // Favorites filter state
@@ -35,14 +37,17 @@ class _HomePageState extends State<HomePage> {
         content: _fields(),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
             onPressed: () {
               if (nameCtrl.text.isNotEmpty && qtyCtrl.text.isNotEmpty) {
                 service.addItem(
-                    nameCtrl.text.trim(), int.tryParse(qtyCtrl.text) ?? 0);
+                  nameCtrl.text.trim(),
+                  int.tryParse(qtyCtrl.text) ?? 0,
+                );
                 Navigator.pop(context);
               }
             },
@@ -64,13 +69,17 @@ class _HomePageState extends State<HomePage> {
         content: _fields(),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             onPressed: () {
-              service.updateItem(item.id, nameCtrl.text.trim(),
-                  int.tryParse(qtyCtrl.text) ?? 0);
+              service.updateItem(
+                item.id,
+                nameCtrl.text.trim(),
+                int.tryParse(qtyCtrl.text) ?? 0,
+              );
               Navigator.pop(context);
             },
             child: const Text('Edit', style: TextStyle(color: Colors.white)),
@@ -81,22 +90,26 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _fields() => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: nameCtrl,
-            decoration: const InputDecoration(
-                labelText: 'Name', border: OutlineInputBorder()),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: qtyCtrl,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-                labelText: 'Quantity', border: OutlineInputBorder()),
-          ),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      TextField(
+        controller: nameCtrl,
+        decoration: const InputDecoration(
+          labelText: 'Name',
+          border: OutlineInputBorder(),
+        ),
+      ),
+      const SizedBox(height: 12),
+      TextField(
+        controller: qtyCtrl,
+        keyboardType: TextInputType.number,
+        decoration: const InputDecoration(
+          labelText: 'Quantity',
+          border: OutlineInputBorder(),
+        ),
+      ),
+    ],
+  );
 
   void confirmDelete(String id) {
     showDialog(
@@ -106,8 +119,9 @@ class _HomePageState extends State<HomePage> {
         content: const Text('Are you sure you want to delete this item?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () {
               service.deleteItem(id);
@@ -132,9 +146,17 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             tooltip: 'Show favorites only',
             icon: Icon(
-                showFavoritesOnly ? Icons.favorite : Icons.favorite_border),
+              showFavoritesOnly ? Icons.favorite : Icons.favorite_border,
+            ),
             onPressed: () =>
                 setState(() => showFavoritesOnly = !showFavoritesOnly),
+          ),
+          IconButton(
+            tooltip: 'Log out',
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await authService.signOut();
+            },
           ),
         ],
       ),
@@ -160,16 +182,19 @@ class _HomePageState extends State<HomePage> {
               final isFav = (data['isFavorite'] ?? false) == true;
               return Card(
                 child: ListTile(
-                  title: Text(data['name'] ?? '',
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    data['name'] ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text('Quantity ${data['quantity'] ?? 0}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: Icon(
-                            isFav ? Icons.favorite : Icons.favorite_border,
-                            color: isFav ? Colors.red : Colors.grey),
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          color: isFav ? Colors.red : Colors.grey,
+                        ),
                         onPressed: () =>
                             service.toggleFavorite(item.id, !isFav),
                       ),

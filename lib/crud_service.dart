@@ -1,19 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CrudService {
-  final CollectionReference items =
-      FirebaseFirestore.instance.collection('items');
+  final CollectionReference<Map<String, dynamic>> items = FirebaseFirestore
+      .instance
+      .collection('items');
 
   Future<void> addItem(String name, int quantity) {
     return items.add({
       'name': name,
       'quantity': quantity,
-      'isFavorite': false, // new field for the Favorites filter
+      'isFavorite': false,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
 
-  Stream<QuerySnapshot> getItems() =>
+  Stream<QuerySnapshot<Map<String, dynamic>>> getItems() =>
       items.orderBy('createdAt').snapshots();
 
   Future<void> updateItem(String id, String name, int quantity) {
