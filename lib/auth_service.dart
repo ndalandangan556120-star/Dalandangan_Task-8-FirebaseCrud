@@ -1,63 +1,66 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn? _googleSignIn = kIsWeb ? null : GoogleSignIn();
 
+  // GOOGLE SIGN-IN
   Future<User?> signInWithGoogle() async {
     if (kIsWeb) {
-      final credential = await _auth.signInWithPopup(GoogleAuthProvider());
-      return credential.user;
+      GoogleAuthProvider googleProvider = GoogleAuthProvider();
+      UserCredential userCredential =
+          await _auth.signInWithPopup(googleProvider);
+      return userCredential.user;
+    } else {
+      final googleUser = await _googleSignIn!.signIn();
+      if (googleUser == null) return null;
+
+      final googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      return (await _auth.signInWithCredential(credential)).user;
     }
-
-    final googleUser = await _googleSignIn!.signIn();
-    if (googleUser == null) return null;
-
-    final googleAuth = await googleUser.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-    return (await _auth.signInWithCredential(credential)).user;
   }
 
+  // EMAIL/PASSWORD REGISTER
   Future<User?> registerWithEmail(String email, String password) async {
-    final credential = await _auth.createUserWithEmailAndPassword(
-      email: email.trim().toLowerCase(),
-      password: password,
-    );
-    return credential.user;
-  }
-
-  Future<User?> signInWithEmail(String email, String password) async {
-    final credential = await _auth.signInWithEmailAndPassword(
-      email: email.trim().toLowerCase(),
-      password: password,
-    );
-    return credential.user;
-  }
-
-  Future<String?> resetPassword(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email: email);
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      return userCredential.user;
+    } catch (e) {
+      print("Registration error: $e");
       return null;
-    } on FirebaseAuthException catch (error) {
-      if (error.code == 'user-not-found') {
-        return 'No account found for that email.';
-      }
-      if (error.code == 'invalid-email') {
-        return 'Please enter a valid email.';
-      }
-      return error.message ?? 'Could not send reset email.';
     }
   }
 
-  Future<void> resendVerificationEmail() async {
-    await _auth.currentUser?.sendEmailVerification();
+  // EMAIL/PASSWORD LOGIN
+  Future<User?> signInWithEmail(String email, String password) async {
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
+      return userCredential.user;
+    } catch (e) {
+      print("Login error: $e");
+      return null;
+    }
   }
 
+  // FORGOT PASSWORD (new)
+  Future<String?> sendPasswordReset(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+      return null; // null = success
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? 'Something went wrong.';
+    }
+  }
+
+  // SIGN OUT
   Future<void> signOut() async {
     if (!kIsWeb) {
       await _googleSignIn?.signOut();

@@ -1,29 +1,69 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
+import 'package:image_picker/image_picker.dart';
+
+class PickedImage {
+  final File file;
+  final String url;
+  PickedImage({required this.file, required this.url});
+}
 
 class CrudService {
-  final CollectionReference<Map<String, dynamic>> items = FirebaseFirestore
-      .instance
-      .collection('items');
+  final CollectionReference items =
+      FirebaseFirestore.instance.collection('items');
 
-  Future<void> addItem(String name, int quantity) {
-    return items.add({
+  // TODO: replace with YOUR cloud name and YOUR unsigned upload preset name
+  final CloudinaryPublic _cloudinary = CloudinaryPublic(
+    'tghdkxp7',
+    'flutter_upload_preset',
+    cache: false,
+  );
+
+  final ImagePicker _picker = ImagePicker();
+
+  // Opens gallery, uploads to Cloudinary, returns the file + secure URL
+  Future<PickedImage?> pickImageForAddItem() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return null; // user cancelled
+
+    final file = File(pickedFile.path);
+
+    final response = await _cloudinary.uploadFile(
+      CloudinaryFile.fromFile(
+        file.path,
+        resourceType: CloudinaryResourceType.Image,
+      ),
+    );
+    return PickedImage(file: file, url: response.secureUrl);
+  }
+
+  //CREATE
+  Future<void> addItemWithImage(
+      String name, int quantity, String? imageUrl) async {
+    await items.add({
       'name': name,
       'quantity': quantity,
-      'isFavorite': false,
-      'createdAt': FieldValue.serverTimestamp(),
+      'image_url': imageUrl,
+      'createdAt': Timestamp.now(),
     });
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getItems() =>
-      items.orderBy('createdAt').snapshots();
+  //READ
+  Stream<QuerySnapshot> getItems() {
+    return items.orderBy('createdAt', descending: true).snapshots();
+  }
 
+  //UPDATE
   Future<void> updateItem(String id, String name, int quantity) {
-    return items.doc(id).update({'name': name, 'quantity': quantity});
+    return items.doc(id).update({
+      'name': name,
+      'quantity': quantity,
+    });
   }
 
-  Future<void> toggleFavorite(String id, bool value) {
-    return items.doc(id).update({'isFavorite': value});
+  //DELETE
+  Future<void> deleteItem(String id) {
+    return items.doc(id).delete();
   }
-
-  Future<void> deleteItem(String id) => items.doc(id).delete();
 }
