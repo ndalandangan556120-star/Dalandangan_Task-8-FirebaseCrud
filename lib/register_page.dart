@@ -52,12 +52,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   final user = await auth.registerWithEmail(
                       emailCtrl.text, passwordCtrl.text);
 
+                  if (!context.mounted) return;
                   setState(() => loading = false);
 
                   if (user != null) {
                     // Send verification email
                     if (!user.emailVerified) {
                       await user.sendEmailVerification();
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text(

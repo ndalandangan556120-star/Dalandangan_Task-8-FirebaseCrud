@@ -32,8 +32,7 @@ class AuthService {
       final userCredential = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       return userCredential.user;
-    } catch (e) {
-      print("Registration error: $e");
+    } catch (_) {
       return null;
     }
   }
@@ -44,20 +43,32 @@ class AuthService {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       return userCredential.user;
-    } catch (e) {
-      print("Login error: $e");
+    } on FirebaseAuthException {
+      rethrow;
+    } catch (_) {
       return null;
     }
   }
 
-  // FORGOT PASSWORD (new)
-  Future<String?> sendPasswordReset(String email) async {
+  // FORGOT PASSWORD
+  Future<String?> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
       return null; // null = success
     } on FirebaseAuthException catch (e) {
       return e.message ?? 'Something went wrong.';
     }
+  }
+
+  Future<void> resendVerificationEmail() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(
+        code: 'no-current-user',
+        message: 'Sign in again before resending verification.',
+      );
+    }
+    await user.sendEmailVerification();
   }
 
   // SIGN OUT

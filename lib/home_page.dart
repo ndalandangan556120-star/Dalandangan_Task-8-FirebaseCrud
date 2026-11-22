@@ -16,7 +16,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey,
       appBar: AppBar(
-        title: const Text('Firebase Lastname'), // <-- put YOUR last name
+        title: const Text('Firebase - Dalandangan'), // <-- put YOUR last name
         centerTitle: true,
         backgroundColor: Colors.teal,
         actions: [
@@ -212,6 +212,7 @@ class HomePage extends StatelessWidget {
                     int.parse(qtyCtrl.text),
                     selectedImageUrl,
                   );
+                  if (!context.mounted) return;
                   Navigator.pop(context);
                 }
               },
