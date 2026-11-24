@@ -10,8 +10,9 @@ class AuthService {
   Future<User?> signInWithGoogle() async {
     if (kIsWeb) {
       GoogleAuthProvider googleProvider = GoogleAuthProvider();
-      UserCredential userCredential =
-          await _auth.signInWithPopup(googleProvider);
+      UserCredential userCredential = await _auth.signInWithPopup(
+        googleProvider,
+      );
       return userCredential.user;
     } else {
       final googleUser = await _googleSignIn!.signIn();
@@ -27,11 +28,22 @@ class AuthService {
   }
 
   // EMAIL/PASSWORD REGISTER
-  Future<User?> registerWithEmail(String email, String password) async {
+  Future<User?> registerWithEmail(
+    String email,
+    String password, {
+    String? photoUrl,
+  }) async {
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      return userCredential.user;
+        email: email,
+        password: password,
+      );
+      final user = userCredential.user;
+      if (user != null && photoUrl != null) {
+        await user.updatePhotoURL(photoUrl);
+        await user.reload();
+      }
+      return _auth.currentUser;
     } catch (_) {
       return null;
     }
@@ -41,7 +53,9 @@ class AuthService {
   Future<User?> signInWithEmail(String email, String password) async {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
+        email: email,
+        password: password,
+      );
       return userCredential.user;
     } on FirebaseAuthException {
       rethrow;

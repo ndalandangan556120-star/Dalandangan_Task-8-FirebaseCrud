@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'auth_service.dart';
+import 'crud_service.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -10,9 +13,12 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final AuthService auth = AuthService();
+  final CrudService crud = CrudService();
   final TextEditingController emailCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
   bool loading = false;
+  File? selectedImageFile;
+  String? selectedImageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +30,50 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              GestureDetector(
+                onTap: () async {
+                  final pickedImage = await crud.pickImageForAddItem();
+                  if (pickedImage != null) {
+                    setState(() {
+                      selectedImageFile = pickedImage.file;
+                      selectedImageUrl = pickedImage.url;
+                    });
+                  }
+                },
+                child: CircleAvatar(
+                  radius: 52,
+                  backgroundColor: Colors.teal.shade100,
+                  backgroundImage: selectedImageFile != null
+                      ? FileImage(selectedImageFile!)
+                      : null,
+                  child: selectedImageFile == null
+                      ? const Icon(
+                          Icons.add_a_photo,
+                          size: 36,
+                          color: Colors.teal,
+                        )
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: () async {
+                  final pickedImage = await crud.pickImageForAddItem();
+                  if (pickedImage != null) {
+                    setState(() {
+                      selectedImageFile = pickedImage.file;
+                      selectedImageUrl = pickedImage.url;
+                    });
+                  }
+                },
+                icon: const Icon(Icons.photo_library),
+                label: Text(
+                  selectedImageFile == null
+                      ? "Add profile photo"
+                      : "Change photo",
+                ),
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: emailCtrl,
                 decoration: const InputDecoration(
@@ -46,11 +96,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text("Register"),
                 onPressed: () async {
-                  if (emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) return;
+                  if (emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
+                    return;
+                  }
                   setState(() => loading = true);
 
                   final user = await auth.registerWithEmail(
-                      emailCtrl.text, passwordCtrl.text);
+                    emailCtrl.text,
+                    passwordCtrl.text,
+                    photoUrl: selectedImageUrl,
+                  );
 
                   if (!context.mounted) return;
                   setState(() => loading = false);
@@ -62,8 +117,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content: Text(
-                                "Verification email sent. Please check your inbox.")),
+                          content: Text(
+                            "Verification email sent. Please check your inbox.",
+                          ),
+                        ),
                       );
                     }
                     Navigator.pushReplacement(

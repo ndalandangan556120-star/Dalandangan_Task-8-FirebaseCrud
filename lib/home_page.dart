@@ -46,7 +46,8 @@ class HomePage extends StatelessWidget {
           final docs = snapshot.data!.docs;
           if (docs.isEmpty) {
             return const Center(
-                child: Text("No items found", style: TextStyle(fontSize: 18)));
+              child: Text("No items found", style: TextStyle(fontSize: 18)),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(8),
@@ -61,11 +62,14 @@ class HomePage extends StatelessWidget {
               return Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 margin: const EdgeInsets.symmetric(vertical: 6),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   leading: imageUrl != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(8),
@@ -80,7 +84,9 @@ class HomePage extends StatelessWidget {
                   title: Text(
                     data['name'] ?? '',
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   subtitle: Text(
                     "Quantity: ${data['quantity'] ?? 0}",
@@ -153,7 +159,8 @@ class HomePage extends StatelessWidget {
                 decoration: InputDecoration(
                   labelText: "Name",
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -162,7 +169,8 @@ class HomePage extends StatelessWidget {
                 decoration: InputDecoration(
                   labelText: "Quantity",
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -202,7 +210,8 @@ class HomePage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: const Text("Save"),
               onPressed: () async {
@@ -239,8 +248,9 @@ class HomePage extends StatelessWidget {
               controller: nameCtrl,
               decoration: InputDecoration(
                 labelText: "Name",
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -248,8 +258,9 @@ class HomePage extends StatelessWidget {
               controller: qtyCtrl,
               decoration: InputDecoration(
                 labelText: "Quantity",
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ],
@@ -262,14 +273,18 @@ class HomePage extends StatelessWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Update'),
             onPressed: () {
               if (nameCtrl.text.isNotEmpty && qtyCtrl.text.isNotEmpty) {
                 service.updateItem(
-                    item.id, nameCtrl.text, int.parse(qtyCtrl.text));
+                  item.id,
+                  nameCtrl.text,
+                  int.parse(qtyCtrl.text),
+                );
                 Navigator.pop(context);
               }
             },

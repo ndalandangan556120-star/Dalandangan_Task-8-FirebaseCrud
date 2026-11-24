@@ -10,13 +10,14 @@ class PickedImage {
 }
 
 class CrudService {
-  final CollectionReference items =
-      FirebaseFirestore.instance.collection('items');
+  final CollectionReference items = FirebaseFirestore.instance.collection(
+    'items',
+  );
 
   // TODO: replace with YOUR cloud name and YOUR unsigned upload preset name
   final CloudinaryPublic _cloudinary = CloudinaryPublic(
     'tghdkxp7',
-    'flutter_upload_preset',
+    'flutter_notes_preset',
     cache: false,
   );
 
@@ -40,7 +41,10 @@ class CrudService {
 
   //CREATE
   Future<void> addItemWithImage(
-      String name, int quantity, String? imageUrl) async {
+    String name,
+    int quantity,
+    String? imageUrl,
+  ) async {
     await items.add({
       'name': name,
       'quantity': quantity,
@@ -56,10 +60,7 @@ class CrudService {
 
   //UPDATE
   Future<void> updateItem(String id, String name, int quantity) {
-    return items.doc(id).update({
-      'name': name,
-      'quantity': quantity,
-    });
+    return items.doc(id).update({'name': name, 'quantity': quantity});
   }
 
   //DELETE
